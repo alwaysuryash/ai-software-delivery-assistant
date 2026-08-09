@@ -1,0 +1,111 @@
+INFO:     Started server process [1007713]
+INFO:     Waiting for application startup.
+{"env": "local", "model_provider": "fake", "connector_mode": "mock", "write_actions": true, "event": "app_start", "level": "info", "timestamp": "2026-08-09T09:37:40.140644Z"}
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:45030 - "OPTIONS /auth/dev-login HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:46608 - "OPTIONS /auth/dev-login HTTP/1.1" 200 OK
+{"method": "POST", "path": "/auth/dev-login", "event": "request_start", "correlation_id": "76e7c582fc904ecc894e19e612975318", "level": "info", "timestamp": "2026-08-09T09:47:51.541884Z"}
+{"method": "POST", "path": "/auth/dev-login", "status": 200, "ms": 90.04, "event": "request_end", "correlation_id": "76e7c582fc904ecc894e19e612975318", "level": "info", "timestamp": "2026-08-09T09:47:51.631853Z"}
+INFO:     127.0.0.1:46624 - "POST /auth/dev-login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46624 - "OPTIONS /projects HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects", "event": "request_start", "correlation_id": "a098dcfc4b424eeeab589bb0d023529f", "level": "info", "timestamp": "2026-08-09T09:47:51.653577Z"}
+INFO:     127.0.0.1:46624 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+{"method": "GET", "path": "/auth/me", "event": "request_start", "correlation_id": "4758fab6147845dd90495745ef5ab58d", "level": "info", "timestamp": "2026-08-09T09:47:51.684832Z"}
+{"method": "GET", "path": "/auth/me", "status": 200, "ms": 1.55, "event": "request_end", "correlation_id": "4758fab6147845dd90495745ef5ab58d", "level": "info", "timestamp": "2026-08-09T09:47:51.686292Z"}
+INFO:     127.0.0.1:46630 - "GET /auth/me HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects", "status": 200, "ms": 40.34, "event": "request_end", "correlation_id": "a098dcfc4b424eeeab589bb0d023529f", "level": "info", "timestamp": "2026-08-09T09:47:51.693864Z"}
+INFO:     127.0.0.1:46608 - "GET /projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58586 - "OPTIONS /projects/f4a4cf17eb564376beef918af9e1774d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58594 - "OPTIONS /projects/f4a4cf17eb564376beef918af9e1774d/reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58602 - "OPTIONS /projects/f4a4cf17eb564376beef918af9e1774d/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58586 - "OPTIONS /projects/f4a4cf17eb564376beef918af9e1774d/audit HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d", "event": "request_start", "correlation_id": "591000d783814753923e69cb91a1a9b1", "level": "info", "timestamp": "2026-08-09T09:47:57.760280Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/actions", "event": "request_start", "correlation_id": "0145637d873f4aa9b1e329aa146118e7", "level": "info", "timestamp": "2026-08-09T09:47:57.771325Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/reports", "event": "request_start", "correlation_id": "6f8898dc506549c7bbb7b72aa949e186", "level": "info", "timestamp": "2026-08-09T09:47:57.772665Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/audit", "event": "request_start", "correlation_id": "ac080c6f74ca4c37a4cb32e57c544dda", "level": "info", "timestamp": "2026-08-09T09:47:57.773271Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/actions", "status": 200, "ms": 41.1, "event": "request_end", "correlation_id": "0145637d873f4aa9b1e329aa146118e7", "level": "info", "timestamp": "2026-08-09T09:47:57.812239Z"}
+INFO:     127.0.0.1:58618 - "GET /projects/f4a4cf17eb564376beef918af9e1774d/actions HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d", "status": 200, "ms": 55.92, "event": "request_end", "correlation_id": "591000d783814753923e69cb91a1a9b1", "level": "info", "timestamp": "2026-08-09T09:47:57.816214Z"}
+INFO:     127.0.0.1:58616 - "GET /projects/f4a4cf17eb564376beef918af9e1774d HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/audit", "status": 200, "ms": 51.63, "event": "request_end", "correlation_id": "ac080c6f74ca4c37a4cb32e57c544dda", "level": "info", "timestamp": "2026-08-09T09:47:57.824902Z"}
+INFO:     127.0.0.1:58594 - "GET /projects/f4a4cf17eb564376beef918af9e1774d/audit HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/reports", "status": 200, "ms": 58.9, "event": "request_end", "correlation_id": "6f8898dc506549c7bbb7b72aa949e186", "level": "info", "timestamp": "2026-08-09T09:47:57.831565Z"}
+INFO:     127.0.0.1:58602 - "GET /projects/f4a4cf17eb564376beef918af9e1774d/reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41918 - "OPTIONS /auth/dev-login HTTP/1.1" 200 OK
+{"method": "POST", "path": "/auth/dev-login", "event": "request_start", "correlation_id": "31df1a41cf4e4fdf92bb31334958d139", "level": "info", "timestamp": "2026-08-09T09:50:47.784877Z"}
+{"method": "POST", "path": "/auth/dev-login", "status": 200, "ms": 6.48, "event": "request_end", "correlation_id": "31df1a41cf4e4fdf92bb31334958d139", "level": "info", "timestamp": "2026-08-09T09:50:47.791307Z"}
+INFO:     127.0.0.1:41926 - "POST /auth/dev-login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41926 - "OPTIONS /projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41918 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects", "event": "request_start", "correlation_id": "5eab695d0c9b4295b0c229f9bd40e8f3", "level": "info", "timestamp": "2026-08-09T09:50:47.814773Z"}
+{"method": "GET", "path": "/auth/me", "event": "request_start", "correlation_id": "4cf15ac56a4749e8a4a23e0ab8872666", "level": "info", "timestamp": "2026-08-09T09:50:47.817387Z"}
+{"method": "GET", "path": "/auth/me", "status": 200, "ms": 1.25, "event": "request_end", "correlation_id": "4cf15ac56a4749e8a4a23e0ab8872666", "level": "info", "timestamp": "2026-08-09T09:50:47.818619Z"}
+INFO:     127.0.0.1:41926 - "GET /auth/me HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects", "status": 200, "ms": 9.45, "event": "request_end", "correlation_id": "5eab695d0c9b4295b0c229f9bd40e8f3", "level": "info", "timestamp": "2026-08-09T09:50:47.824204Z"}
+INFO:     127.0.0.1:41940 - "GET /projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41940 - "OPTIONS /projects/f4a4cf17eb564376beef918af9e1774d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41926 - "OPTIONS /projects/f4a4cf17eb564376beef918af9e1774d/reports HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d", "event": "request_start", "correlation_id": "20e3888af0194740882790168cc039f6", "level": "info", "timestamp": "2026-08-09T09:50:49.040667Z"}
+INFO:     127.0.0.1:41940 - "OPTIONS /projects/f4a4cf17eb564376beef918af9e1774d/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41944 - "OPTIONS /projects/f4a4cf17eb564376beef918af9e1774d/audit HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/reports", "event": "request_start", "correlation_id": "15347e011edb40cf99714e7e45336c61", "level": "info", "timestamp": "2026-08-09T09:50:49.044516Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/actions", "event": "request_start", "correlation_id": "626317cb4d054002a5099ca5ec7a3e8b", "level": "info", "timestamp": "2026-08-09T09:50:49.049675Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/audit", "event": "request_start", "correlation_id": "e9232dff4ef74a71aed06ebcca15d955", "level": "info", "timestamp": "2026-08-09T09:50:49.050198Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/audit", "status": 200, "ms": 18.04, "event": "request_end", "correlation_id": "e9232dff4ef74a71aed06ebcca15d955", "level": "info", "timestamp": "2026-08-09T09:50:49.068229Z"}
+INFO:     127.0.0.1:41940 - "GET /projects/f4a4cf17eb564376beef918af9e1774d/audit HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/actions", "status": 200, "ms": 20.76, "event": "request_end", "correlation_id": "626317cb4d054002a5099ca5ec7a3e8b", "level": "info", "timestamp": "2026-08-09T09:50:49.070423Z"}
+INFO:     127.0.0.1:41926 - "GET /projects/f4a4cf17eb564376beef918af9e1774d/actions HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/reports", "status": 200, "ms": 31.8, "event": "request_end", "correlation_id": "15347e011edb40cf99714e7e45336c61", "level": "info", "timestamp": "2026-08-09T09:50:49.076291Z"}
+INFO:     127.0.0.1:41952 - "GET /projects/f4a4cf17eb564376beef918af9e1774d/reports HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d", "status": 200, "ms": 38.56, "event": "request_end", "correlation_id": "20e3888af0194740882790168cc039f6", "level": "info", "timestamp": "2026-08-09T09:50:49.079197Z"}
+INFO:     127.0.0.1:41918 - "GET /projects/f4a4cf17eb564376beef918af9e1774d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38358 - "OPTIONS /auth/dev-login HTTP/1.1" 200 OK
+{"method": "POST", "path": "/auth/dev-login", "event": "request_start", "correlation_id": "2b910dc4359d419ea5edaed61fde2fbe", "level": "info", "timestamp": "2026-08-09T09:53:57.260966Z"}
+{"method": "POST", "path": "/auth/dev-login", "status": 200, "ms": 5.67, "event": "request_end", "correlation_id": "2b910dc4359d419ea5edaed61fde2fbe", "level": "info", "timestamp": "2026-08-09T09:53:57.266579Z"}
+INFO:     127.0.0.1:38366 - "POST /auth/dev-login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38366 - "OPTIONS /projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38358 - "OPTIONS /auth/me HTTP/1.1" 200 OK
+{"method": "GET", "path": "/auth/me", "event": "request_start", "correlation_id": "0ec7f03a6ad04aa68574710da1091dac", "level": "info", "timestamp": "2026-08-09T09:53:57.288072Z"}
+{"method": "GET", "path": "/projects", "event": "request_start", "correlation_id": "ab7d3c783e7f40d9a2a553a3e802550f", "level": "info", "timestamp": "2026-08-09T09:53:57.289552Z"}
+{"method": "GET", "path": "/auth/me", "status": 200, "ms": 3.25, "event": "request_end", "correlation_id": "0ec7f03a6ad04aa68574710da1091dac", "level": "info", "timestamp": "2026-08-09T09:53:57.291292Z"}
+INFO:     127.0.0.1:38366 - "GET /auth/me HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects", "status": 200, "ms": 5.44, "event": "request_end", "correlation_id": "ab7d3c783e7f40d9a2a553a3e802550f", "level": "info", "timestamp": "2026-08-09T09:53:57.294976Z"}
+INFO:     127.0.0.1:38378 - "GET /projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38378 - "OPTIONS /projects/f4a4cf17eb564376beef918af9e1774d HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d", "event": "request_start", "correlation_id": "e0faad032e834556bd00868dad1a31c9", "level": "info", "timestamp": "2026-08-09T09:53:58.500221Z"}
+INFO:     127.0.0.1:38358 - "OPTIONS /projects/f4a4cf17eb564376beef918af9e1774d/reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38378 - "OPTIONS /projects/f4a4cf17eb564376beef918af9e1774d/actions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38388 - "OPTIONS /projects/f4a4cf17eb564376beef918af9e1774d/audit HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/audit", "event": "request_start", "correlation_id": "ca81ca7af25d4b0d819b23f8af1cb98c", "level": "info", "timestamp": "2026-08-09T09:53:58.504949Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/reports", "event": "request_start", "correlation_id": "a73d29540c0f42dc82da38b11ba0c793", "level": "info", "timestamp": "2026-08-09T09:53:58.505573Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/actions", "event": "request_start", "correlation_id": "927af5304261443aa0a0adde0c3ed480", "level": "info", "timestamp": "2026-08-09T09:53:58.505790Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/audit", "status": 200, "ms": 25.89, "event": "request_end", "correlation_id": "ca81ca7af25d4b0d819b23f8af1cb98c", "level": "info", "timestamp": "2026-08-09T09:53:58.530852Z"}
+INFO:     127.0.0.1:38390 - "GET /projects/f4a4cf17eb564376beef918af9e1774d/audit HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/actions", "status": 200, "ms": 29.17, "event": "request_end", "correlation_id": "927af5304261443aa0a0adde0c3ed480", "level": "info", "timestamp": "2026-08-09T09:53:58.535029Z"}
+INFO:     127.0.0.1:38358 - "GET /projects/f4a4cf17eb564376beef918af9e1774d/actions HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d", "status": 200, "ms": 38.91, "event": "request_end", "correlation_id": "e0faad032e834556bd00868dad1a31c9", "level": "info", "timestamp": "2026-08-09T09:53:58.539096Z"}
+INFO:     127.0.0.1:38366 - "GET /projects/f4a4cf17eb564376beef918af9e1774d HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/reports", "status": 200, "ms": 43.99, "event": "request_end", "correlation_id": "a73d29540c0f42dc82da38b11ba0c793", "level": "info", "timestamp": "2026-08-09T09:53:58.549574Z"}
+INFO:     127.0.0.1:38388 - "GET /projects/f4a4cf17eb564376beef918af9e1774d/reports HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38388 - "OPTIONS /projects/f4a4cf17eb564376beef918af9e1774d/run HTTP/1.1" 200 OK
+{"method": "POST", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/run", "event": "request_start", "correlation_id": "e99dc479e8494262b372b087d9a90aa4", "level": "info", "timestamp": "2026-08-09T09:54:00.601346Z"}
+{"method": "POST", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/run", "status": 200, "ms": 68.56, "event": "request_end", "correlation_id": "e99dc479e8494262b372b087d9a90aa4", "level": "info", "timestamp": "2026-08-09T09:54:00.669879Z"}
+INFO:     127.0.0.1:38366 - "POST /projects/f4a4cf17eb564376beef918af9e1774d/run HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/reports", "event": "request_start", "correlation_id": "33ed56dc3a0c48f7a4fe40e130878df1", "level": "info", "timestamp": "2026-08-09T09:54:00.677298Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d", "event": "request_start", "correlation_id": "0eee82fa3e40412c986f09abd82c69d0", "level": "info", "timestamp": "2026-08-09T09:54:00.678842Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/actions", "event": "request_start", "correlation_id": "665a220b58e04a3292af2e1d7baef25f", "level": "info", "timestamp": "2026-08-09T09:54:00.679991Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/audit", "event": "request_start", "correlation_id": "7a0e19d5a9374f598f4b3142f00cd479", "level": "info", "timestamp": "2026-08-09T09:54:00.680220Z"}
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/audit", "status": 200, "ms": 30.87, "event": "request_end", "correlation_id": "7a0e19d5a9374f598f4b3142f00cd479", "level": "info", "timestamp": "2026-08-09T09:54:00.711127Z"}
+INFO:     127.0.0.1:38390 - "GET /projects/f4a4cf17eb564376beef918af9e1774d/audit HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/actions", "status": 200, "ms": 36.29, "event": "request_end", "correlation_id": "665a220b58e04a3292af2e1d7baef25f", "level": "info", "timestamp": "2026-08-09T09:54:00.716299Z"}
+INFO:     127.0.0.1:38358 - "GET /projects/f4a4cf17eb564376beef918af9e1774d/actions HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d", "status": 200, "ms": 39.59, "event": "request_end", "correlation_id": "0eee82fa3e40412c986f09abd82c69d0", "level": "info", "timestamp": "2026-08-09T09:54:00.718391Z"}
+INFO:     127.0.0.1:38388 - "GET /projects/f4a4cf17eb564376beef918af9e1774d HTTP/1.1" 200 OK
+{"method": "GET", "path": "/projects/f4a4cf17eb564376beef918af9e1774d/reports", "status": 200, "ms": 48.42, "event": "request_end", "correlation_id": "33ed56dc3a0c48f7a4fe40e130878df1", "level": "info", "timestamp": "2026-08-09T09:54:00.725696Z"}
+INFO:     127.0.0.1:38366 - "GET /projects/f4a4cf17eb564376beef918af9e1774d/reports HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+{"event": "app_stop", "level": "info", "timestamp": "2026-08-09T09:56:35.574633Z"}
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1007713]

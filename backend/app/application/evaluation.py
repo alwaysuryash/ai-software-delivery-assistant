@@ -43,13 +43,19 @@ class QualityGateEvaluator:
         for f in findings:
             for ref in f.evidence_refs:
                 total_citations += 1
-                record_id = ref.get("record_id") or ref.get("record_ref")
+                record_id = (
+                    ref.get("record_id")
+                    or ref.get("record_ref")
+                    or ref.get("id")
+                    or ref.get("source_record_id")
+                )
                 if record_id in evidence_ids:
                     valid_citations += 1
                 else:
                     citation_errors.append(f"Invalid citation '{record_id}' in finding '{f.title}'")
 
         groundedness_score = (valid_citations / total_citations) if total_citations > 0 else 1.0
+        # Require 100% citation validity for perfect groundedness score, fail if below 0.8
         groundedness_result = "pass" if groundedness_score >= 0.8 else "fail"
 
         eval_groundedness = Evaluation(
@@ -59,18 +65,34 @@ class QualityGateEvaluator:
             score=groundedness_score,
             result=groundedness_result,
             is_critical=True,
-            details={"total_citations": total_citations, "valid_citations": valid_citations, "errors": citation_errors},
+            details={
+                "total_citations": total_citations,
+                "valid_citations": valid_citations,
+                "errors": citation_errors,
+            },
         )
         self.session.add(eval_groundedness)
         evaluations.append(eval_groundedness)
 
-        # 3. Completeness & Schema adherence Evaluator
-        # Report content must have the key dimensions
+        # 3. Completeness & Schema Adherence Evaluator (FR-016 / Appendix A)
+        # Checking presence of all recommended report sections
         content = report.content or {}
-        has_summary = "executive_summary" in content
-        has_scoring = "scoring_engine" in content
-        completeness_score = 1.0 if (has_summary and has_scoring) else 0.5
-        completeness_result = "pass" if completeness_score == 1.0 else "fail"
+        mandatory_sections = [
+            "executive_summary",
+            "progress_milestones",
+            "scope_requirements",
+            "development_health",
+            "quality_readiness",
+            "operations_environments",
+            "scoring_engine",
+        ]
+
+        present_sections = [sec for sec in mandatory_sections if sec in content]
+        missing_sections = [sec for sec in mandatory_sections if sec not in content]
+
+        completeness_score = len(present_sections) / len(mandatory_sections)
+        # Completeness passes if we have at least 80% of the mandatory sections
+        completeness_result = "pass" if completeness_score >= 0.8 else "fail"
 
         eval_completeness = Evaluation(
             run_id=run_id,
@@ -79,7 +101,12 @@ class QualityGateEvaluator:
             score=completeness_score,
             result=completeness_result,
             is_critical=True,
-            details={"has_summary": has_summary, "has_scoring": has_scoring},
+            details={
+                "present_sections": present_sections,
+                "missing_sections": missing_sections,
+                "total_mandatory": len(mandatory_sections),
+                "total_present": len(present_sections),
+            },
         )
         self.session.add(eval_completeness)
         evaluations.append(eval_completeness)

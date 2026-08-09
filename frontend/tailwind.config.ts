@@ -4,6 +4,10 @@ const config: Config = {
   content: ["./src/**/*.{ts,tsx}", "./src/app/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      fontSize: {
+        "2xs": "0.625rem",
+        "3xs": "0.5rem",
+      },
       colors: {
         health: {
           green: "#15803d",

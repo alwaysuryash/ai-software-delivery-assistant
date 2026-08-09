@@ -11,6 +11,16 @@ const HEALTH_COLORS: Record<string, string> = {
   amber: "bg-amber-100 text-amber-800 border-amber-200",
   red: "bg-red-100 text-red-800 border-red-200",
   unknown: "bg-gray-100 text-gray-800 border-gray-200",
+
+  // Status and evaluation mappings (B8)
+  pass: "bg-green-100 text-green-800 border-green-200",
+  fail: "bg-red-100 text-red-800 border-red-200",
+  approved: "bg-green-100 text-green-800 border-green-200",
+  evaluated: "bg-blue-100 text-blue-800 border-blue-200",
+  pending: "bg-amber-100 text-amber-800 border-amber-200",
+  executed: "bg-green-100 text-green-800 border-green-200",
+  blocked: "bg-red-100 text-red-800 border-red-200",
+  draft: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
 const HEALTH_DOTS: Record<string, string> = {

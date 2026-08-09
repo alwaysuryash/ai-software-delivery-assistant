@@ -16,7 +16,16 @@ async def test_evaluation_success(session_factory, seeded):
         session.add(run)
         await session.flush()
 
-        report = Report(project_id=seeded["project_id"], run_id=run.id, period="sprint", report_type="daily", content={"executive_summary": "ok", "scoring_engine": {}}, status="draft")
+        dummy_content = {
+            "executive_summary": "ok",
+            "progress_milestones": "ok",
+            "scope_requirements": "ok",
+            "development_health": "ok",
+            "quality_readiness": "ok",
+            "operations_environments": "ok",
+            "scoring_engine": {}
+        }
+        report = Report(project_id=seeded["project_id"], run_id=run.id, period="sprint", report_type="daily", content=dummy_content, status="draft")
         session.add(report)
         await session.flush()
 
@@ -50,7 +59,16 @@ async def test_evaluation_blocks_on_invalid_citation(session_factory, seeded):
         session.add(run)
         await session.flush()
 
-        report = Report(project_id=seeded["project_id"], run_id=run.id, period="sprint", report_type="daily", content={"executive_summary": "ok", "scoring_engine": {}}, status="draft")
+        dummy_content = {
+            "executive_summary": "ok",
+            "progress_milestones": "ok",
+            "scope_requirements": "ok",
+            "development_health": "ok",
+            "quality_readiness": "ok",
+            "operations_environments": "ok",
+            "scoring_engine": {}
+        }
+        report = Report(project_id=seeded["project_id"], run_id=run.id, period="sprint", report_type="daily", content=dummy_content, status="draft")
         session.add(report)
         await session.flush()
 

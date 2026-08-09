@@ -4,15 +4,15 @@
 from __future__ import annotations
 
 from typing import Any
-from datetime import datetime
+from datetime import datetime, UTC
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy import select
 
 from app.api.deps import AccessDep, CurrentPrincipal, DbSession
 from app.api.schemas import ProjectSummary
-from app.core.errors import AuthorizationError, NotFoundError, ValidationError
-from app.domain.enums import Health, ReportStatus, ApprovalStatus
+from app.core.errors import AuthorizationError, NotFoundError, ValidationError, PolicyViolationError
+from app.domain.enums import Health, ReportStatus, ApprovalStatus, Role
 from app.domain.rbac import Permission
 from app.infrastructure.db.models import Project, ProjectAccess, Report, Action, Feedback, AuditEvent, Finding, Evaluation
 from app.agents.orchestrator import MultiAgentOrchestrator
@@ -20,6 +20,20 @@ from app.application.evaluation import QualityGateEvaluator
 from app.application.approval import ApprovalService
 
 router = APIRouter(prefix="/projects", tags=["projects"])
+
+
+async def check_access(access: AccessDep, principal: CurrentPrincipal, project_id: str, permission: Permission) -> None:
+    """Enforces project access (hiding existence with 404 if no access) and verifies role permissions (403)."""
+    try:
+        await access.require(principal, project_id, Permission.PROJECT_READ)
+    except AuthorizationError as e:
+        print("DEBUG check_access PROJECT_READ failed:", str(e))
+        raise NotFoundError("Project not found.") from None
+    try:
+        await access.require(principal, project_id, permission)
+    except AuthorizationError as e:
+        print("DEBUG check_access permission failed:", str(e))
+        raise
 
 
 class RunRequest(BaseModel):
@@ -74,10 +88,7 @@ async def get_project(
     session: DbSession,
     access: AccessDep,
 ) -> ProjectSummary:
-    try:
-        await access.require(principal, project_id, Permission.PROJECT_READ)
-    except AuthorizationError:
-        raise NotFoundError("Project not found.") from None
+    await check_access(access, principal, project_id, Permission.PROJECT_READ)
 
     project = await session.get(Project, project_id)
     if project is None:
@@ -105,13 +116,10 @@ async def run_assistant(
     access: AccessDep,
 ) -> dict[str, Any]:
     """Triggers multi-agent reasoning, deterministic scoring, and quality gates evaluation (Phase 4, 5, 6)."""
-    try:
-        await access.require(principal, project_id, Permission.PROJECT_READ)
-    except AuthorizationError:
-        raise NotFoundError("Project not found.") from None
+    await check_access(access, principal, project_id, Permission.RUN_ASSISTANT)
 
     # Run multi-agent intelligence orchestrator
-    correlation_id = f"run-{datetime.utcnow().timestamp()}"
+    correlation_id = f"run-{datetime.now(UTC).timestamp()}"
     orchestrator = MultiAgentOrchestrator(session, correlation_id)
     res = await orchestrator.execute_run(project_id, principal.user_id, req.prompt)
 
@@ -160,12 +168,23 @@ async def list_reports(
     session: DbSession,
     access: AccessDep,
 ) -> list[dict[str, Any]]:
-    try:
-        await access.require(principal, project_id, Permission.PROJECT_READ)
-    except AuthorizationError:
-        raise NotFoundError("Project not found.") from None
+    await check_access(access, principal, project_id, Permission.PROJECT_READ)
 
-    stmt = select(Report).where(Report.project_id == project_id).order_by(Report.created_at.desc())
+    # Check if user has full REPORT_READ or only REPORT_APPROVED_READ (B3, Phase 7)
+    has_full_read = False
+    try:
+        await access.require(principal, project_id, Permission.REPORT_READ)
+        has_full_read = True
+    except AuthorizationError:
+        # Require REPORT_APPROVED_READ
+        await access.require(principal, project_id, Permission.REPORT_APPROVED_READ)
+
+    stmt = select(Report).where(Report.project_id == project_id)
+    if not has_full_read:
+        # Limited to approved or published reports (Executive persona)
+        stmt = stmt.where(Report.status.in_([ReportStatus.APPROVED, ReportStatus.PUBLISHED]))
+
+    stmt = stmt.order_by(Report.created_at.desc())
     reports = (await session.execute(stmt)).scalars().all()
 
     res = []
@@ -212,17 +231,14 @@ async def approve_report(
     session: DbSession,
     access: AccessDep,
 ) -> dict[str, Any]:
-    try:
-        await access.require(principal, project_id, Permission.PROJECT_READ)
-    except AuthorizationError:
-        raise NotFoundError("Project not found.") from None
+    await check_access(access, principal, project_id, Permission.REPORT_EDIT)
 
     report = await session.get(Report, report_id)
     if report is None or report.project_id != project_id:
         raise NotFoundError("Report not found.")
 
     if report.status == ReportStatus.BLOCKED:
-        raise ValidationError("Cannot approve report. It has failed quality gate evaluators and is BLOCKED.")
+        raise PolicyViolationError("Cannot approve report. It has failed quality gate evaluators and is BLOCKED.")
 
     report.status = ReportStatus.APPROVED
     report.approved_by = principal.user_id
@@ -248,10 +264,7 @@ async def list_actions(
     session: DbSession,
     access: AccessDep,
 ) -> list[dict[str, Any]]:
-    try:
-        await access.require(principal, project_id, Permission.PROJECT_READ)
-    except AuthorizationError:
-        raise NotFoundError("Project not found.") from None
+    await check_access(access, principal, project_id, Permission.PROJECT_READ)
 
     stmt = select(Action).where(Action.project_id == project_id).order_by(Action.created_at.desc())
     actions = (await session.execute(stmt)).scalars().all()
@@ -273,10 +286,7 @@ async def approve_proposed_action(
     session: DbSession,
     access: AccessDep,
 ) -> dict[str, Any]:
-    try:
-        await access.require(principal, project_id, Permission.PROJECT_READ)
-    except AuthorizationError:
-        raise NotFoundError("Project not found.") from None
+    await check_access(access, principal, project_id, Permission.ACTION_APPROVE)
 
     approval_service = ApprovalService(session)
     action = await approval_service.approve_action(action_id, principal.user_id)
@@ -293,10 +303,7 @@ async def execute_approved_action(
     session: DbSession,
     access: AccessDep,
 ) -> dict[str, Any]:
-    try:
-        await access.require(principal, project_id, Permission.PROJECT_READ)
-    except AuthorizationError:
-        raise NotFoundError("Project not found.") from None
+    await check_access(access, principal, project_id, Permission.PROJECT_READ)
 
     approval_service = ApprovalService(session)
     action = await approval_service.execute_action(action_id, principal.user_id, req.payload)
@@ -312,10 +319,7 @@ async def submit_feedback(
     session: DbSession,
     access: AccessDep,
 ) -> dict[str, Any]:
-    try:
-        await access.require(principal, project_id, Permission.PROJECT_READ)
-    except AuthorizationError:
-        raise NotFoundError("Project not found.") from None
+    await check_access(access, principal, project_id, Permission.FEEDBACK_WRITE)
 
     feedback = Feedback(
         finding_id=req.finding_id,
@@ -337,10 +341,7 @@ async def list_audit_events(
     session: DbSession,
     access: AccessDep,
 ) -> list[dict[str, Any]]:
-    try:
-        await access.require(principal, project_id, Permission.PROJECT_READ)
-    except AuthorizationError:
-        raise NotFoundError("Project not found.") from None
+    await check_access(access, principal, project_id, Permission.PROJECT_READ)
 
     stmt = select(AuditEvent).order_by(AuditEvent.created_at.desc()).limit(100)
     events = (await session.execute(stmt)).scalars().all()

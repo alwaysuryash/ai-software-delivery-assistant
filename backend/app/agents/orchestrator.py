@@ -17,7 +17,7 @@ from app.connectors.registry import get_connector_registry
 from app.domain.enums import ConnectorType, Health, RunStatus, EvidenceSourceType
 from app.domain.scoring import calculate_health, HealthReportSummary
 from app.infrastructure.ai.model_provider import get_model_provider
-from app.infrastructure.db.models import AgentRun, Evidence, Finding, Risk, Action, AuditEvent, Project
+from app.infrastructure.db.models import AgentRun, Evidence, Finding, Risk, Action, AuditEvent, Project, Report
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -175,7 +175,18 @@ class MultiAgentOrchestrator:
         await self.session.flush()
 
         # 4. Deterministic Scoring Engine
-        scoring_res = calculate_health(work_items, pull_requests, builds, deployments, test_runs, defects)
+        project = await self.session.get(Project, project_id)
+        health_config = project.health_config if project else None
+        scoring_res = calculate_health(
+            work_items,
+            pull_requests,
+            builds,
+            deployments,
+            test_runs,
+            defects,
+            health_config=health_config,
+            current_time=now,
+        )
 
         # 5. Invoke Specialized Agents via ModelProvider (Phase 5)
         # We will retrieve agent schemas by formatting prompts
@@ -265,7 +276,6 @@ class MultiAgentOrchestrator:
             "scoring_engine": scoring_res,
         }
 
-        from app.infrastructure.db.models import Report
         report = Report(
             project_id=project_id,
             run_id=run.id,
