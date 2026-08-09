@@ -1,0 +1,18 @@
+
+> aisda-frontend@0.1.0 dev /app/frontend
+> next dev --port 3000
+
+  ▲ Next.js 14.2.15
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 4s
+ ○ Compiling / ...
+ ✓ Compiled / in 4.8s (590 modules)
+ GET / 200 in 5136ms
+ ○ Compiling /projects/[id] ...
+ ✓ Compiled /projects/[id] in 4.3s (598 modules)
+ GET / 200 in 163ms
+ GET / 200 in 29ms
+ ELIFECYCLE  Command failed.
+[?25h

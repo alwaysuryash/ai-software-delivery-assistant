@@ -33,7 +33,7 @@ async def session_factory(engine) -> async_sessionmaker[AsyncSession]:
 
 @pytest_asyncio.fixture
 async def seeded(session_factory) -> dict:
-    """Seed a PM user, an unrelated user, Project Alpha, and access grants."""
+    """Seed users across all roles, Project Alpha, and access grants."""
     async with session_factory() as session:
         pm = User(
             identity_provider_id="dev|pm@acme.com",
@@ -41,25 +41,54 @@ async def seeded(session_factory) -> dict:
             display_name="Pat Morgan",
             role=Role.DELIVERY_MANAGER,
         )
+        techlead = User(
+            identity_provider_id="dev|techlead@acme.com",
+            email="techlead@acme.com",
+            display_name="Alex Rivera",
+            role=Role.TECHNICAL_LEAD,
+        )
+        exec_user = User(
+            identity_provider_id="dev|exec@acme.com",
+            email="exec@acme.com",
+            display_name="Erin Chan",
+            role=Role.EXECUTIVE,
+        )
         outsider = User(
             identity_provider_id="dev|nobody@acme.com",
             email="nobody@acme.com",
             display_name="No Body",
             role=Role.DELIVERY_MANAGER,
         )
-        session.add_all([pm, outsider])
+        session.add_all([pm, techlead, exec_user, outsider])
         await session.flush()
 
         project = Project(name="Project Alpha", owner="pm@acme.com", status="active")
         session.add(project)
         await session.flush()
 
+        # Add access grants
         session.add(
             ProjectAccess(
                 user_id=pm.id,
                 project_id=project.id,
                 role=Role.DELIVERY_MANAGER,
                 permissions=[p.value for p in permissions_for(Role.DELIVERY_MANAGER)],
+            )
+        )
+        session.add(
+            ProjectAccess(
+                user_id=techlead.id,
+                project_id=project.id,
+                role=Role.TECHNICAL_LEAD,
+                permissions=[p.value for p in permissions_for(Role.TECHNICAL_LEAD)],
+            )
+        )
+        session.add(
+            ProjectAccess(
+                user_id=exec_user.id,
+                project_id=project.id,
+                role=Role.EXECUTIVE,
+                permissions=[p.value for p in permissions_for(Role.EXECUTIVE)],
             )
         )
         session.add(

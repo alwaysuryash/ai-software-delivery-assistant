@@ -10,8 +10,9 @@ Golden Rules:
 
 from __future__ import annotations
 
+from datetime import datetime, UTC
 from typing import Any, TypedDict
-from app.domain.enums import Health, Severity
+from app.domain.enums import Health
 from app.connectors.models import WorkItem, PullRequest, Build, Deployment, TestRun, Defect
 
 
@@ -35,9 +36,42 @@ def calculate_health(
     deployments: list[Deployment] | None,
     test_runs: list[TestRun] | None,
     defects: list[Defect] | None,
+    health_config: dict[str, Any] | None = None,
+    current_time: datetime | None = None,
 ) -> HealthReportSummary:
-    """Calculate deterministic health scores and RAG statuses across 5 dimensions."""
+    """Calculate deterministic health scores and RAG statuses across 5 dimensions, fully configurable."""
     dimensions: dict[str, DimensionResult] = {}
+
+    # Load configuration
+    cfg = health_config or {}
+    weights_override = cfg.get("weights", {})
+
+    # Dimension Weights (Scope, Schedule, Quality, Engineering, Release/Operations)
+    default_weights = {
+        "scope": 0.20,
+        "schedule": 0.25,
+        "quality": 0.25,
+        "engineering": 0.15,
+        "operations": 0.15,
+    }
+    weights = {}
+    for key, val in default_weights.items():
+        weights[key] = float(weights_override.get(key, val))
+
+    # Normalize custom weights if they don't sum to exactly 1.0
+    w_sum = sum(weights.values())
+    if w_sum > 0 and abs(w_sum - 1.0) > 1e-4:
+        for key in weights:
+            weights[key] = weights[key] / w_sum
+
+    # Overdue helper
+    now_compare = current_time or datetime.now(UTC)
+    def is_overdue(due_date: datetime, current_time: datetime) -> bool:
+        if due_date.tzinfo is not None and current_time.tzinfo is None:
+            current_time = current_time.replace(tzinfo=due_date.tzinfo)
+        elif due_date.tzinfo is None and current_time.tzinfo is not None:
+            due_date = due_date.replace(tzinfo=current_time.tzinfo)
+        return due_date < current_time
 
     # 1. Scope Dimension (20% weight)
     if work_items is None:
@@ -48,6 +82,10 @@ def calculate_health(
             "details": {},
         }
     else:
+        scope_cfg = cfg.get("scope", {})
+        missing_ac_threshold = scope_cfg.get("missing_ac_threshold", 2)
+        blocked_threshold = scope_cfg.get("blocked_threshold", 0)
+
         triggers = []
         score = 100.0
         blocked_count = sum(1 for w in work_items if w.is_blocked)
@@ -60,8 +98,8 @@ def calculate_health(
             triggers.append(f"{blocked_count} blocked work items")
             score -= (blocked_count * 15)
 
-        # Red trigger example: Critical requirement unresolved or unapproved scope expansion
-        is_red = blocked_count > 0 or missing_ac_count > 2
+        # Red trigger condition based on thresholds
+        is_red = blocked_count > blocked_threshold or missing_ac_count > missing_ac_threshold
         score = max(0.0, min(100.0, score))
         health = Health.RED if is_red else (Health.AMBER if score < 85 else Health.GREEN)
 
@@ -85,6 +123,10 @@ def calculate_health(
             "details": {},
         }
     else:
+        sched_cfg = cfg.get("schedule", {})
+        overdue_threshold = sched_cfg.get("overdue_threshold", 0)
+        blocked_points_pct_threshold = sched_cfg.get("blocked_points_pct_threshold", 30.0)
+
         triggers = []
         score = 100.0
         overdue_count = 0
@@ -92,9 +134,10 @@ def calculate_health(
         blocked_points = sum(w.story_points or 0 for w in work_items if w.is_blocked)
 
         for w in work_items:
-            # Overdue check: state is active/blocked and has overdue date
+            # Overdue check: state is active/blocked/new and due_date in the past
             if w.state in ["active", "blocked", "new"] and w.due_date:
-                overdue_count += 1
+                if is_overdue(w.due_date, now_compare):
+                    overdue_count += 1
 
         if overdue_count > 0:
             triggers.append(f"{overdue_count} overdue active work items")
@@ -104,8 +147,8 @@ def calculate_health(
         if blocked_pct > 0:
             score -= (blocked_pct * 0.5)
 
-        # Red trigger: Critical milestone missed or blocked points > 30%
-        is_red = overdue_count > 0 or blocked_pct > 30.0
+        # Red trigger condition based on thresholds
+        is_red = overdue_count > overdue_threshold or blocked_pct > blocked_points_pct_threshold
         score = max(0.0, min(100.0, score))
         health = Health.RED if is_red else (Health.AMBER if score < 80 else Health.GREEN)
 
@@ -129,6 +172,12 @@ def calculate_health(
             "details": {},
         }
     else:
+        qual_cfg = cfg.get("quality", {})
+        pass_rate_threshold = qual_cfg.get("pass_rate_threshold", 95.0)
+        red_pass_rate_threshold = qual_cfg.get("red_pass_rate_threshold", 80.0)
+        blocking_defects_threshold = qual_cfg.get("blocking_defects_threshold", 0)
+        unexecuted_suites_threshold = qual_cfg.get("unexecuted_suites_threshold", 0)
+
         triggers = []
         score = 100.0
 
@@ -155,10 +204,15 @@ def calculate_health(
         if open_blocking_defects:
             triggers.append(f"{len(open_blocking_defects)} open release-blocking defects")
             score -= 50
-        if pass_rate < 95.0:
-            score -= (100.0 - pass_rate) * 2
+        if pass_rate < pass_rate_threshold:
+            score -= (pass_rate_threshold - pass_rate) * 2
 
-        is_red = len(open_blocking_defects) > 0 or len(unexecuted_critical_suites) > 0 or pass_rate < 80.0
+        # Red trigger condition based on thresholds
+        is_red = (
+            len(open_blocking_defects) > blocking_defects_threshold
+            or len(unexecuted_critical_suites) > unexecuted_suites_threshold
+            or pass_rate < red_pass_rate_threshold
+        )
         score = max(0.0, min(100.0, score))
         health = Health.RED if is_red else (Health.AMBER if score < 90 else Health.GREEN)
 
@@ -182,6 +236,10 @@ def calculate_health(
             "details": {},
         }
     else:
+        eng_cfg = cfg.get("engineering", {})
+        aged_prs_threshold = eng_cfg.get("aged_prs_threshold", 1)
+        pr_age_limit_hours = eng_cfg.get("pr_age_limit_hours", 72.0)
+
         triggers = []
         score = 100.0
 
@@ -189,17 +247,18 @@ def calculate_health(
         main_failed = any(
             b.branch == "main" and b.result == "failed" for b in builds
         )
-        # Open PR age > 72 hours
-        aged_prs = [pr for pr in pull_requests if pr.status == "open" and pr.age_hours > 72]
+        # Open PR age > pr_age_limit_hours
+        aged_prs = [pr for pr in pull_requests if pr.status == "open" and pr.age_hours > pr_age_limit_hours]
 
         if main_failed:
             triggers.append("Main build failed")
             score -= 40
         if aged_prs:
-            triggers.append(f"{len(aged_prs)} open pull requests older than 72 hours")
+            triggers.append(f"{len(aged_prs)} open pull requests older than {pr_age_limit_hours} hours")
             score -= (len(aged_prs) * 20)
 
-        is_red = main_failed or len(aged_prs) > 1
+        # Red trigger condition based on thresholds
+        is_red = main_failed or len(aged_prs) > aged_prs_threshold
         score = max(0.0, min(100.0, score))
         health = Health.RED if is_red else (Health.AMBER if score < 85 or aged_prs else Health.GREEN)
 
@@ -222,6 +281,9 @@ def calculate_health(
             "details": {},
         }
     else:
+        ops_cfg = cfg.get("operations", {})
+        failed_deployments_threshold = ops_cfg.get("failed_deployments_threshold", 0)
+
         triggers = []
         score = 100.0
 
@@ -234,7 +296,8 @@ def calculate_health(
             triggers.append(f"{len(failed_deploys)} failed deployments without validated rollback")
             score -= 50
 
-        is_red = len(failed_deploys) > 0
+        # Red trigger condition based on thresholds
+        is_red = len(failed_deploys) > failed_deployments_threshold
         score = max(0.0, min(100.0, score))
         health = Health.RED if is_red else (Health.AMBER if score < 90 else Health.GREEN)
 
@@ -248,15 +311,6 @@ def calculate_health(
         }
 
     # Overall Health Calculation (Weighted Average or override if any dimension is RED)
-    # Weights: Scope (20%), Schedule (25%), Quality (25%), Engineering (15%), Operations (15%)
-    weights = {
-        "scope": 0.20,
-        "schedule": 0.25,
-        "quality": 0.25,
-        "engineering": 0.15,
-        "operations": 0.15,
-    }
-
     weighted_score = 0.0
     any_unknown = False
     any_red = False
@@ -273,7 +327,6 @@ def calculate_health(
         weighted_score += r["score"] * weights[dim]
 
     if any_unknown:
-        # If any of the required dimensions are missing completely, or overall cannot be computed safely
         overall_health = Health.UNKNOWN
     elif any_red:
         overall_health = Health.RED
